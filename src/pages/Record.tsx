@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Video, 
   VideoOff, 
@@ -12,7 +14,16 @@ import {
   Camera,
   Sparkles,
   Settings,
-  ArrowLeft
+  ArrowLeft,
+  FileText,
+  ImageIcon,
+  Droplet,
+  Repeat,
+  Shield,
+  X,
+  Plus,
+  Minus,
+  Gauge
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
@@ -25,11 +36,19 @@ const Record = () => {
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [micEnabled, setMicEnabled] = useState(true);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [showTeleprompter, setShowTeleprompter] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState(50);
+  const [textSize, setTextSize] = useState(24);
+  const [teleprompterText, setTeleprompterText] = useState(
+    "Have you ever found yourself longing for a holiday outside the typical calendar celebrations?\n\nToday, we're going to explore the world of unusual holidays.\n\nThese are the quirky, lesser-known days that add a little extra joy to our year.\n\nFrom National Ice Cream Day to Talk Like a Pirate Day, there's a celebration for almost everything.\n\nSo grab your favorite snack, sit back, and let's dive into the wonderful world of unique holidays that you probably never knew existed."
+  );
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const { toast } = useToast();
 
@@ -58,6 +77,19 @@ const Record = () => {
       }
     };
   }, [isRecording, isPaused]);
+
+  // Auto-scroll teleprompter
+  useEffect(() => {
+    if (showTeleprompter && scrollContainerRef.current) {
+      const scrollInterval = setInterval(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop += scrollSpeed / 50;
+        }
+      }, 50);
+      
+      return () => clearInterval(scrollInterval);
+    }
+  }, [showTeleprompter, scrollSpeed]);
 
   const startCamera = async () => {
     try {
@@ -233,6 +265,165 @@ const Record = () => {
           muted
           className="w-full h-full object-cover"
         />
+
+        {/* Left Control Panel */}
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-3">
+          <button
+            onClick={() => setShowTeleprompter(!showTeleprompter)}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all backdrop-blur-md ${
+              showTeleprompter 
+                ? 'bg-white/90 text-black' 
+                : 'bg-black/30 text-white hover:bg-black/50'
+            }`}
+          >
+            <FileText className="w-5 h-5" />
+            <span className="text-sm font-medium">Teleprompter</span>
+          </button>
+
+          <button
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 backdrop-blur-md transition-all"
+          >
+            <ImageIcon className="w-5 h-5" />
+            <span className="text-sm font-medium">Snapshot</span>
+          </button>
+
+          <button
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 backdrop-blur-md transition-all"
+          >
+            <Droplet className="w-5 h-5" />
+            <span className="text-sm font-medium">Canvas</span>
+          </button>
+
+          <button
+            onClick={switchCamera}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 backdrop-blur-md transition-all"
+          >
+            <Repeat className="w-5 h-5" />
+            <span className="text-sm font-medium">Flip Cameras</span>
+          </button>
+
+          <button
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 backdrop-blur-md transition-all"
+          >
+            <Shield className="w-5 h-5" />
+            <span className="text-sm font-medium">Stabilisation</span>
+            <span className="text-xs opacity-70">Standard</span>
+          </button>
+
+          <button
+            onClick={toggleMic}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 backdrop-blur-md transition-all"
+          >
+            <Mic className="w-5 h-5" />
+            <span className="text-sm font-medium">Microphone</span>
+            <span className="text-xs opacity-70">{micEnabled ? 'On' : 'Off'}</span>
+          </button>
+
+          <Link to="/">
+            <button className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 backdrop-blur-md transition-all">
+              <X className="w-5 h-5" />
+              <span className="text-sm font-medium">Close</span>
+            </button>
+          </Link>
+        </div>
+
+        {/* Teleprompter Overlay */}
+        {showTeleprompter && (
+          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-l from-black/80 via-black/60 to-transparent flex items-center justify-center p-8">
+            <div className="w-full max-w-2xl h-full flex flex-col">
+              {/* Teleprompter Controls */}
+              <div className="flex items-center justify-between mb-4 bg-black/50 backdrop-blur-md rounded-lg p-4">
+                <div className="flex items-center gap-4">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:bg-white/20"
+                    onClick={() => setShowSettings(!showSettings)}
+                  >
+                    <Settings className="w-5 h-5" />
+                  </Button>
+                  
+                  <div className="text-white">
+                    <div className="text-xs opacity-70 mb-1">Scroll Speed</div>
+                    <div className="flex items-center gap-2">
+                      <Gauge className="w-4 h-4" />
+                      <span className="text-sm font-medium">{scrollSpeed}%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:bg-white/20"
+                    onClick={() => setTextSize(Math.max(12, textSize - 2))}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <span className="text-white text-sm min-w-12 text-center">{textSize}px</span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:bg-white/20"
+                    onClick={() => setTextSize(Math.min(48, textSize + 2))}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Advanced Settings Panel */}
+              {showSettings && (
+                <div className="bg-black/70 backdrop-blur-md rounded-lg p-4 mb-4">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-white text-sm mb-2 block">Scroll Speed</label>
+                      <Slider
+                        value={[scrollSpeed]}
+                        onValueChange={(value) => setScrollSpeed(value[0])}
+                        max={100}
+                        min={0}
+                        step={5}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-white text-sm mb-2 block">Text Size</label>
+                      <Slider
+                        value={[textSize]}
+                        onValueChange={(value) => setTextSize(value[0])}
+                        max={48}
+                        min={12}
+                        step={2}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Teleprompter Text Display */}
+              <div 
+                ref={scrollContainerRef}
+                className="flex-1 overflow-y-auto scrollbar-hide"
+                style={{ 
+                  scrollBehavior: 'smooth'
+                }}
+              >
+                <div 
+                  className="text-white leading-relaxed whitespace-pre-wrap"
+                  style={{ 
+                    fontSize: `${textSize}px`,
+                    lineHeight: '1.8'
+                  }}
+                >
+                  {teleprompterText}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Recording Indicator */}
         {isRecording && (
