@@ -1,8 +1,45 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Video, Sparkles, Mic, Share2, Edit3 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Video, Sparkles, Mic, Share2, Edit3, LogOut, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Session } from "@supabase/supabase-js";
 
 const Index = () => {
+  const [session, setSession] = useState<Session | null>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully",
+      });
+      navigate("/auth");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -14,12 +51,30 @@ const Index = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <Link to="/record">
-              <Button variant="default" className="bg-primary hover:bg-primary/90 glow-primary">
-                <Video className="w-4 h-4 mr-2" />
-                Start Recording
-              </Button>
-            </Link>
+            {session ? (
+              <>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="w-4 h-4" />
+                  <span>{session.user.email}</span>
+                </div>
+                <Link to="/record">
+                  <Button variant="default" className="bg-primary hover:bg-primary/90 glow-primary">
+                    <Video className="w-4 h-4 mr-2" />
+                    Start Recording
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button variant="default" className="bg-primary hover:bg-primary/90">
+                  Sign In
+                </Button>
+              </Link>
+            )}
           </div>
         </nav>
       </header>

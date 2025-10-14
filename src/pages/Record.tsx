@@ -26,7 +26,10 @@ import {
   Gauge
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import ScriptGeneratorDialog from "@/components/ScriptGeneratorDialog";
+import { Session } from "@supabase/supabase-js";
 
 const Record = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -43,6 +46,8 @@ const Record = () => {
   const [teleprompterText, setTeleprompterText] = useState(
     "Have you ever found yourself longing for a holiday outside the typical calendar celebrations?\n\nToday, we're going to explore the world of unusual holidays.\n\nThese are the quirky, lesser-known days that add a little extra joy to our year.\n\nFrom National Ice Cream Day to Talk Like a Pirate Day, there's a celebration for almost everything.\n\nSo grab your favorite snack, sit back, and let's dive into the wonderful world of unique holidays that you probably never knew existed."
   );
+  const [showScriptDialog, setShowScriptDialog] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -51,6 +56,28 @@ const Record = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Check authentication
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   // Initialize camera
   useEffect(() => {
@@ -438,11 +465,22 @@ const Record = () => {
           <Button
             size="sm"
             className="bg-primary hover:bg-primary/90 gap-2"
+            onClick={() => setShowScriptDialog(true)}
           >
             <Sparkles className="w-4 h-4" />
             Generate Script
           </Button>
         </div>
+
+        {/* Script Generator Dialog */}
+        <ScriptGeneratorDialog
+          open={showScriptDialog}
+          onOpenChange={setShowScriptDialog}
+          onScriptGenerated={(script) => {
+            setTeleprompterText(script);
+            setShowTeleprompter(true);
+          }}
+        />
 
         {/* Recording Controls */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
