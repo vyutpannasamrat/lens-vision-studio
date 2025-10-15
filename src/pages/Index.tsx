@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Video, Sparkles, Mic, Share2, Edit3, LogOut, User } from "lucide-react";
+import { Video, Sparkles, Mic, Share2, Edit3, LogOut, User, History as HistoryIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -57,6 +57,12 @@ const Index = () => {
                   <User className="w-4 h-4" />
                   <span>{session.user.email}</span>
                 </div>
+                <Link to="/history">
+                  <Button variant="ghost" size="sm">
+                    <HistoryIcon className="w-4 h-4 mr-2" />
+                    History
+                  </Button>
+                </Link>
                 <Link to="/record">
                   <Button variant="default" className="bg-primary hover:bg-primary/90 glow-primary">
                     <Video className="w-4 h-4 mr-2" />

@@ -196,22 +196,67 @@ const Record = () => {
         }
       };
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(chunksRef.current, { type: 'video/mp4' });
         
-        // Download the video
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `recording-${Date.now()}.webm`;
-        a.click();
-        
-        chunksRef.current = [];
-        
-        toast({
-          title: "Recording saved",
-          description: "Your video has been downloaded",
-        });
+        try {
+          // Upload to Supabase Storage
+          const fileName = `${session?.user.id}/${Date.now()}.mp4`;
+          
+          toast({
+            title: "Uploading video...",
+            description: "Please wait while we save your recording",
+          });
+
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('recordings')
+            .upload(fileName, blob, {
+              contentType: 'video/mp4',
+              upsert: false
+            });
+
+          if (uploadError) throw uploadError;
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('recordings')
+            .getPublicUrl(fileName);
+
+          // Save recording metadata to database
+          const { error: dbError } = await supabase
+            .from('recordings')
+            .insert({
+              user_id: session?.user.id,
+              title: `Recording ${new Date().toLocaleDateString()}`,
+              video_url: publicUrl,
+              duration: recordingTime,
+              script_id: null // TODO: Link to script if generated from one
+            });
+
+          if (dbError) throw dbError;
+
+          chunksRef.current = [];
+          
+          toast({
+            title: "Recording saved",
+            description: "Your video has been saved to history",
+          });
+        } catch (error) {
+          console.error('Error saving recording:', error);
+          
+          // Fallback: download locally
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `recording-${Date.now()}.mp4`;
+          a.click();
+          
+          toast({
+            title: "Saved locally",
+            description: "Video couldn't be uploaded but was downloaded",
+            variant: "destructive",
+          });
+        }
       };
 
       mediaRecorder.start();
