@@ -43,28 +43,32 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 border-b border-border/40 bg-background/80 backdrop-blur-lg">
+      <header className="fixed top-0 w-full z-50 border-b border-border/40 glass-card">
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Video className="w-6 h-6 text-primary" />
-            <span className="font-bold text-xl">Lens Vision</span>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center glow-primary">
+              <Video className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-display font-bold text-xl">Lens Vision</span>
           </div>
           
           <div className="flex items-center gap-4">
             {session ? (
               <>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <User className="w-4 h-4" />
-                  <span>{session.user.email}</span>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="hidden md:inline">{session.user.email}</span>
                 </div>
                 <Link to="/history">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="hover-glow">
                     <HistoryIcon className="w-4 h-4 mr-2" />
                     History
                   </Button>
                 </Link>
                 <Link to="/record">
-                  <Button variant="default" className="bg-primary hover:bg-primary/90 glow-primary">
+                  <Button className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 btn-elevated">
                     <Video className="w-4 h-4 mr-2" />
                     Start Recording
                   </Button>
@@ -76,7 +80,7 @@ const Index = () => {
               </>
             ) : (
               <Link to="/auth">
-                <Button variant="default" className="bg-primary hover:bg-primary/90">
+                <Button className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 btn-elevated">
                   Sign In
                 </Button>
               </Link>
@@ -86,22 +90,32 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
-        <div className="container mx-auto max-w-6xl text-center">
-          <div className="space-y-8">
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter">
-              <span className="block">Shoot.</span>
-              <span className="block text-gradient">Edit.</span>
-              <span className="block">Share.</span>
+      <section className="pt-32 pb-20 px-4 relative overflow-hidden">
+        {/* Animated background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))] pointer-events-none" />
+        
+        <div className="container mx-auto max-w-6xl text-center relative z-10">
+          <div className="space-y-8 animate-fade-up">
+            <div className="inline-block mb-4">
+              <div className="px-4 py-2 rounded-full glass-card border border-primary/20 text-sm font-medium text-primary-glow animate-bounce-in">
+                ✨ AI-Powered Video Creation
+              </div>
+            </div>
+            
+            <h1 className="text-6xl md:text-8xl font-display font-black tracking-tighter">
+              <span className="block animate-fade-in">Shoot.</span>
+              <span className="block text-gradient animate-fade-in" style={{ animationDelay: '0.2s' }}>Edit.</span>
+              <span className="block animate-fade-in" style={{ animationDelay: '0.4s' }}>Share.</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '0.6s' }}>
               Record video podcasts, presentations, livestreams and reaction videos – automatically edited and ready in seconds.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4 animate-fade-in" style={{ animationDelay: '0.8s' }}>
               <Link to="/record">
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 glow-primary">
+                <Button size="lg" className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-lg px-8 py-6 btn-elevated animate-pulse-glow">
                   <Video className="w-5 h-5 mr-2" />
                   Start Recording Now
                 </Button>
@@ -110,11 +124,15 @@ const Index = () => {
           </div>
 
           {/* Phone Mockup */}
-          <div className="mt-20 relative">
-            <div className="relative mx-auto max-w-sm aspect-[9/19] bg-card rounded-[2.5rem] border-8 border-border shadow-2xl overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-transparent" />
+          <div className="mt-20 relative animate-fade-up" style={{ animationDelay: '1s' }}>
+            <div className="relative mx-auto max-w-sm aspect-[9/19] gradient-border rounded-[2.5rem] shadow-elevated overflow-hidden animate-float">
+              <div className="absolute inset-0 bg-gradient-to-b from-card via-card to-background" />
+              <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-transparent" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <Video className="w-20 h-20 text-primary/40" />
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+                  <Video className="w-20 h-20 text-primary relative z-10" />
+                </div>
               </div>
             </div>
           </div>
@@ -122,61 +140,63 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 border-t border-border/40">
-        <div className="container mx-auto max-w-6xl">
+      <section className="py-20 px-4 border-t border-border/40 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background pointer-events-none" />
+        
+        <div className="container mx-auto max-w-6xl relative z-10">
           <div className="grid md:grid-cols-2 gap-12">
             {/* Feature 1 */}
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-primary" />
+            <div className="space-y-4 group animate-fade-up">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center glow-primary group-hover:scale-110 transition-transform duration-300">
+                <Sparkles className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold">
+              <h2 className="text-3xl md:text-4xl font-display font-bold">
                 Record talking videos
-                <span className="block text-primary">with ease.</span>
+                <span className="block text-gradient">with ease.</span>
               </h2>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 Record with a teleprompter, use your own script, generate a script with AI or just get started on your own.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Edit3 className="w-6 h-6 text-primary" />
+            <div className="space-y-4 group animate-fade-up" style={{ animationDelay: '0.1s' }}>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-color to-accent-glow flex items-center justify-center glow-accent group-hover:scale-110 transition-transform duration-300">
+                <Edit3 className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold">
+              <h2 className="text-3xl md:text-4xl font-display font-bold">
                 Share-worthy edits
-                <span className="block text-primary">with AI in a tap.</span>
+                <span className="block text-gradient-accent">with AI in a tap.</span>
               </h2>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 Record your video, tap once, and let Auto Edit do the rest – silence removal, zoom cuts, titles, captions, music and more.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Mic className="w-6 h-6 text-primary" />
+            <div className="space-y-4 group animate-fade-up" style={{ animationDelay: '0.2s' }}>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center glow-primary group-hover:scale-110 transition-transform duration-300">
+                <Mic className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold">
+              <h2 className="text-3xl md:text-4xl font-display font-bold">
                 Start a podcast
-                <span className="block text-primary">with your device.</span>
+                <span className="block text-gradient">with your device.</span>
               </h2>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 Shoot your podcast with a single device or invite a guest and connect a second device for multi-cam recording.
               </p>
             </div>
 
             {/* Feature 4 */}
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Share2 className="w-6 h-6 text-primary" />
+            <div className="space-y-4 group animate-fade-up" style={{ animationDelay: '0.3s' }}>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-color to-accent-glow flex items-center justify-center glow-accent group-hover:scale-110 transition-transform duration-300">
+                <Share2 className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold">
+              <h2 className="text-3xl md:text-4xl font-display font-bold">
                 Publish everywhere
-                <span className="block text-primary">instantly.</span>
+                <span className="block text-gradient-accent">instantly.</span>
               </h2>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 One-click publishing to YouTube, TikTok, Instagram, LinkedIn and more with optimized formats for each platform.
               </p>
             </div>
@@ -187,25 +207,28 @@ const Index = () => {
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
-          <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl p-12 border border-primary/20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to create amazing content?
-            </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Start recording professional videos in seconds with AI-powered tools.
-            </p>
-            <Link to="/record">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 glow-primary">
-                <Video className="w-5 h-5 mr-2" />
-                Get Started Free
-              </Button>
-            </Link>
+          <div className="relative gradient-border rounded-3xl p-12 overflow-hidden animate-fade-up">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent-color/5 to-transparent pointer-events-none" />
+            <div className="relative z-10">
+              <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">
+                Ready to create amazing content?
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8">
+                Start recording professional videos in seconds with AI-powered tools.
+              </p>
+              <Link to="/record">
+                <Button size="lg" className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-lg px-8 py-6 btn-elevated animate-pulse-glow">
+                  <Video className="w-5 h-5 mr-2" />
+                  Get Started Free
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 py-8 px-4">
+      <footer className="border-t border-border/40 py-8 px-4 glass-card">
         <div className="container mx-auto text-center text-muted-foreground">
           <p>&copy; 2025 Lens Vision. AI-powered video creation platform.</p>
         </div>

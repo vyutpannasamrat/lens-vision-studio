@@ -149,163 +149,211 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center p-4">
-      {/* Animated Vine Decorations */}
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent-color/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.15),rgba(255,255,255,0))] pointer-events-none" />
+      
+      {/* Enhanced Vine Decorations */}
       <div className="absolute inset-0 pointer-events-none">
-        <svg className="absolute top-0 left-0 w-64 h-64 text-primary/10 animate-[fade-in_2s_ease-in]" viewBox="0 0 200 200">
-          <path d="M10,100 Q50,50 100,80 T190,70" stroke="currentColor" strokeWidth="2" fill="none" />
-          <circle cx="50" cy="60" r="3" fill="currentColor" />
-          <circle cx="100" cy="80" r="3" fill="currentColor" />
-          <circle cx="150" cy="60" r="3" fill="currentColor" />
+        {/* Top Left Vine */}
+        <svg className="absolute top-0 left-0 w-80 h-80 text-primary/20 animate-fade-in" viewBox="0 0 200 200">
+          <path d="M10,100 Q30,40 60,60 Q90,80 120,50 T190,70" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <circle cx="30" cy="50" r="4" fill="currentColor" className="animate-pulse" />
+          <circle cx="60" cy="60" r="3.5" fill="currentColor" className="animate-pulse" style={{ animationDelay: '0.5s' }} />
+          <circle cx="90" cy="65" r="3" fill="currentColor" className="animate-pulse" style={{ animationDelay: '1s' }} />
+          <circle cx="120" cy="50" r="4" fill="currentColor" className="animate-pulse" style={{ animationDelay: '1.5s' }} />
+          <circle cx="160" cy="60" r="3" fill="currentColor" className="animate-pulse" style={{ animationDelay: '2s' }} />
         </svg>
         
-        <svg className="absolute top-20 right-0 w-80 h-80 text-primary-glow/10 animate-[fade-in_2.5s_ease-in]" viewBox="0 0 200 200">
-          <path d="M190,50 Q150,80 120,60 T20,90" stroke="currentColor" strokeWidth="2" fill="none" />
-          <circle cx="150" cy="70" r="3" fill="currentColor" />
-          <circle cx="120" cy="60" r="3" fill="currentColor" />
-          <circle cx="70" cy="80" r="3" fill="currentColor" />
+        {/* Top Right Vine */}
+        <svg className="absolute top-10 right-0 w-96 h-96 text-accent-color/15 animate-fade-in" style={{ animationDelay: '0.5s' }} viewBox="0 0 200 200">
+          <path d="M190,40 Q170,70 140,55 Q110,40 80,70 T20,90" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <circle cx="170" cy="60" r="4" fill="currentColor" className="animate-pulse" style={{ animationDelay: '0.3s' }} />
+          <circle cx="140" cy="55" r="3.5" fill="currentColor" className="animate-pulse" style={{ animationDelay: '0.8s' }} />
+          <circle cx="110" cy="50" r="3" fill="currentColor" className="animate-pulse" style={{ animationDelay: '1.3s' }} />
+          <circle cx="80" cy="70" r="4" fill="currentColor" className="animate-pulse" style={{ animationDelay: '1.8s' }} />
         </svg>
 
-        <svg className="absolute bottom-0 left-20 w-72 h-72 text-primary/10 animate-[fade-in_3s_ease-in]" viewBox="0 0 200 200">
-          <path d="M20,150 Q60,120 100,140 T180,130" stroke="currentColor" strokeWidth="2" fill="none" />
-          <circle cx="60" cy="130" r="3" fill="currentColor" />
-          <circle cx="100" cy="140" r="3" fill="currentColor" />
-          <circle cx="140" cy="125" r="3" fill="currentColor" />
+        {/* Bottom Left Vine */}
+        <svg className="absolute bottom-0 left-10 w-96 h-96 text-primary-glow/15 animate-fade-in" style={{ animationDelay: '1s' }} viewBox="0 0 200 200">
+          <path d="M10,150 Q40,110 70,130 Q100,150 130,120 T190,140" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <circle cx="40" cy="120" r="4" fill="currentColor" className="animate-pulse" style={{ animationDelay: '0.7s' }} />
+          <circle cx="70" cy="130" r="3.5" fill="currentColor" className="animate-pulse" style={{ animationDelay: '1.2s' }} />
+          <circle cx="100" cy="135" r="3" fill="currentColor" className="animate-pulse" style={{ animationDelay: '1.7s' }} />
+          <circle cx="130" cy="120" r="4" fill="currentColor" className="animate-pulse" style={{ animationDelay: '2.2s' }} />
         </svg>
 
-        <svg className="absolute bottom-20 right-10 w-64 h-64 text-primary-glow/10 animate-[fade-in_3.5s_ease-in]" viewBox="0 0 200 200">
-          <path d="M180,120 Q140,90 100,110 T10,100" stroke="currentColor" strokeWidth="2" fill="none" />
-          <circle cx="140" cy="100" r="3" fill="currentColor" />
-          <circle cx="100" cy="110" r="3" fill="currentColor" />
-          <circle cx="50" cy="105" r="3" fill="currentColor" />
+        {/* Bottom Right Vine */}
+        <svg className="absolute bottom-10 right-0 w-80 h-80 text-accent-glow/15 animate-fade-in" style={{ animationDelay: '1.5s' }} viewBox="0 0 200 200">
+          <path d="M190,130 Q160,100 130,120 Q100,140 70,110 T10,130" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <circle cx="160" cy="110" r="4" fill="currentColor" className="animate-pulse" style={{ animationDelay: '0.5s' }} />
+          <circle cx="130" cy="120" r="3.5" fill="currentColor" className="animate-pulse" style={{ animationDelay: '1s' }} />
+          <circle cx="100" cy="125" r="3" fill="currentColor" className="animate-pulse" style={{ animationDelay: '1.5s' }} />
+          <circle cx="70" cy="110" r="4" fill="currentColor" className="animate-pulse" style={{ animationDelay: '2s' }} />
         </svg>
       </div>
 
       {/* Auth Card */}
-      <Card className="w-full max-w-md p-8 bg-card/80 backdrop-blur-xl border-border/50 shadow-card relative z-10 animate-scale-in">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center mb-4 glow-primary">
-            <Video className="w-8 h-8 text-white" />
+      <Card className="w-full max-w-md glass-card border-primary/20 shadow-elevated relative z-10 animate-scale-in overflow-hidden">
+        {/* Gradient Accent */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent-color to-primary-glow" />
+        
+        <div className="p-8">
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-8 animate-fade-in">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-full animate-pulse-glow" />
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-primary-glow to-accent-color flex items-center justify-center shadow-lg">
+                <Video className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-display font-bold text-gradient mt-4">Lens Vision</h1>
+            <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              AI-Powered Video Creation
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-gradient">Detail</h1>
-          <p className="text-muted-foreground text-sm mt-2">AI-Powered Video Creation</p>
-        </div>
 
-        {/* Auth Tabs */}
-        <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
+          {/* Auth Tabs */}
+          <Tabs defaultValue="signin" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6 glass-card p-1">
+              <TabsTrigger value="signin" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-glow">
+                Sign In
+              </TabsTrigger>
+              <TabsTrigger value="signup" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-glow">
+                Sign Up
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="signin">
-            <form onSubmit={handleSignIn} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-background/50"
-                />
+            <TabsContent value="signin" className="animate-fade-in">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2 text-foreground">
+                    <Mail className="w-4 h-4 text-primary" />
+                    Email
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="glass-card border-primary/20 focus:border-primary transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2 text-foreground">
+                    <Lock className="w-4 h-4 text-primary" />
+                    Password
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="glass-card border-primary/20 focus:border-primary transition-colors"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-primary via-primary-glow to-accent-color hover:opacity-90 transition-all btn-elevated mt-6"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Signing in...
+                    </span>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup" className="animate-fade-in">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2 text-foreground">
+                    <User className="w-4 h-4 text-primary" />
+                    Full Name
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="John Doe"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    className="glass-card border-primary/20 focus:border-primary transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2 text-foreground">
+                    <Mail className="w-4 h-4 text-primary" />
+                    Email
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="glass-card border-primary/20 focus:border-primary transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2 text-foreground">
+                    <Lock className="w-4 h-4 text-primary" />
+                    Password
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="glass-card border-primary/20 focus:border-primary transition-colors"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Must be at least 6 characters
+                  </p>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-primary via-primary-glow to-accent-color hover:opacity-90 transition-all btn-elevated mt-6"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Creating account...
+                    </span>
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+
+          {/* Feature Highlights */}
+          <div className="mt-8 pt-6 border-t border-border/30">
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="space-y-1">
+                <Sparkles className="w-5 h-5 text-primary mx-auto" />
+                <p className="text-xs text-muted-foreground">AI Scripts</p>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <Lock className="w-4 h-4" />
-                  Password
-                </label>
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="bg-background/50"
-                />
+              <div className="space-y-1">
+                <Video className="w-5 h-5 text-accent-color mx-auto" />
+                <p className="text-xs text-muted-foreground">Pro Recording</p>
               </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 transition-opacity"
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
-            </form>
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <form onSubmit={handleSignUp} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Full Name
-                </label>
-                <Input
-                  type="text"
-                  placeholder="John Doe"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  className="bg-background/50"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-background/50"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <Lock className="w-4 h-4" />
-                  Password
-                </label>
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="bg-background/50"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Must be at least 6 characters
-                </p>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 transition-opacity"
-                disabled={isLoading}
-              >
-                {isLoading ? "Creating account..." : "Create Account"}
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
-
-        {/* Feature Highlights */}
-        <div className="mt-8 pt-6 border-t border-border/50">
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span>AI-powered script generation</span>
+            </div>
           </div>
         </div>
       </Card>
