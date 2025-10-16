@@ -47,16 +47,20 @@ Format the script with clear paragraphs and natural pauses. Make it sound conver
       const errorText = await response.text();
       console.error("OpenAI API error:", response.status, errorText);
       
+      // Map to generic user-friendly messages
+      let userMessage = "Failed to generate script. Please try again.";
+      
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        userMessage = "Rate limit exceeded. Please try again later.";
+      } else if (response.status === 401) {
+        userMessage = "Service temporarily unavailable.";
+      } else if (response.status >= 500) {
+        userMessage = "External service error. Please try again later.";
       }
       
       return new Response(
-        JSON.stringify({ error: `OpenAI API error: ${errorText}` }),
-        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: userMessage }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -70,7 +74,7 @@ Format the script with clear paragraphs and natural pauses. Make it sound conver
   } catch (error) {
     console.error("Error in generate-script function:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "An unexpected error occurred. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
