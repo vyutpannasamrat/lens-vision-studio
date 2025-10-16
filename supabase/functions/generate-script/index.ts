@@ -13,10 +13,10 @@ serve(async (req) => {
 
   try {
     const { prompt, contentType, duration, tone } = await req.json();
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
-    if (!OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     const systemPrompt = `You are a professional script writer for video content creators. Generate engaging, natural-sounding scripts that are perfect for teleprompter reading. 
@@ -27,31 +27,32 @@ Tone: ${tone || 'conversational'}
 
 Format the script with clear paragraphs and natural pauses. Make it sound conversational and engaging.`;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-5-mini-2025-08-07",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: prompt }
         ],
-        max_completion_tokens: 1000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("OpenAI API error:", response.status, errorText);
+      console.error("Lovable AI error:", response.status, errorText);
       
       // Map to generic user-friendly messages
       let userMessage = "Failed to generate script. Please try again.";
       
       if (response.status === 429) {
         userMessage = "Rate limit exceeded. Please try again later.";
+      } else if (response.status === 402) {
+        userMessage = "AI credits exhausted. Please add credits to continue.";
       } else if (response.status === 401) {
         userMessage = "Service temporarily unavailable.";
       } else if (response.status >= 500) {
