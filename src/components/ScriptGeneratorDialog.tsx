@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 interface ScriptGeneratorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onScriptGenerated: (script: string) => void;
+  onScriptGenerated: (script: string, scriptId: string) => void;
 }
 
 const ScriptGeneratorDialog = ({ open, onOpenChange, onScriptGenerated }: ScriptGeneratorDialogProps) => {
@@ -62,16 +62,25 @@ const ScriptGeneratorDialog = ({ open, onOpenChange, onScriptGenerated }: Script
 
       // Save to database
       const { data: { user } } = await supabase.auth.getUser();
+      let scriptId = "";
+      
       if (user) {
-        await supabase.from("scripts").insert({
-          user_id: user.id,
-          title: prompt.slice(0, 100),
-          content: generatedScript,
-          prompt,
-        });
+        const { data: scriptData, error: scriptError } = await supabase
+          .from("scripts")
+          .insert({
+            user_id: user.id,
+            title: prompt.slice(0, 100),
+            content: generatedScript,
+            prompt,
+          })
+          .select()
+          .single();
+        
+        if (scriptError) throw scriptError;
+        scriptId = scriptData.id;
       }
 
-      onScriptGenerated(generatedScript);
+      onScriptGenerated(generatedScript, scriptId);
       onOpenChange(false);
       setPrompt("");
 

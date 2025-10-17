@@ -9,7 +9,8 @@ import {
   Download, 
   Clock,
   Calendar,
-  PlayCircle
+  PlayCircle,
+  FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useNavigate } from "react-router-dom";
@@ -32,6 +33,11 @@ interface Recording {
   duration: number;
   created_at: string;
   thumbnail_url?: string;
+  script_id?: string;
+  scripts?: {
+    title: string;
+    content: string;
+  };
 }
 
 const History = () => {
@@ -79,7 +85,13 @@ const History = () => {
     try {
       const { data, error } = await supabase
         .from('recordings')
-        .select('*')
+        .select(`
+          *,
+          scripts (
+            title,
+            content
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -249,11 +261,19 @@ const History = () => {
                     className="aspect-video bg-black relative group cursor-pointer"
                     onClick={() => setSelectedVideo(recording.video_url)}
                   >
-                    <video
-                      src={recording.video_url}
-                      className="w-full h-full object-cover"
-                      preload="metadata"
-                    />
+                    {recording.thumbnail_url ? (
+                      <img
+                        src={recording.thumbnail_url}
+                        alt={recording.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <video
+                        src={recording.video_url}
+                        className="w-full h-full object-cover"
+                        preload="metadata"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <PlayCircle className="w-12 h-12 text-white" />
                     </div>
@@ -261,15 +281,23 @@ const History = () => {
                   
                   <CardHeader>
                     <CardTitle className="text-lg truncate">{recording.title}</CardTitle>
-                    <CardDescription className="flex items-center gap-4 text-xs">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {formatDate(recording.created_at)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {formatTime(recording.duration || 0)}
-                      </span>
+                    <CardDescription className="space-y-1">
+                      <div className="flex items-center gap-4 text-xs">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(recording.created_at)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatTime(recording.duration || 0)}
+                        </span>
+                      </div>
+                      {recording.scripts && (
+                        <div className="flex items-center gap-1 text-xs text-primary">
+                          <FileText className="w-3 h-3" />
+                          <span className="truncate">Script: {recording.scripts.title}</span>
+                        </div>
+                      )}
                     </CardDescription>
                   </CardHeader>
                   

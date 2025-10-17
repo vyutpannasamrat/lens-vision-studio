@@ -29,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ScriptGeneratorDialog from "@/components/ScriptGeneratorDialog";
+import ScriptEditorDialog from "@/components/ScriptEditorDialog";
 import { Session } from "@supabase/supabase-js";
 
 const Record = () => {
@@ -47,6 +48,9 @@ const Record = () => {
     "Have you ever found yourself longing for a holiday outside the typical calendar celebrations?\n\nToday, we're going to explore the world of unusual holidays.\n\nThese are the quirky, lesser-known days that add a little extra joy to our year.\n\nFrom National Ice Cream Day to Talk Like a Pirate Day, there's a celebration for almost everything.\n\nSo grab your favorite snack, sit back, and let's dive into the wonderful world of unique holidays that you probably never knew existed."
   );
   const [showScriptDialog, setShowScriptDialog] = useState(false);
+  const [showScriptEditor, setShowScriptEditor] = useState(false);
+  const [cameraFilter, setCameraFilter] = useState("none");
+  const [currentScriptId, setCurrentScriptId] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -123,10 +127,16 @@ const Record = () => {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          width: { min: 1280, ideal: 1920, max: 4096 },
+          height: { min: 720, ideal: 1080, max: 2160 },
+          frameRate: { ideal: 60, max: 60 },
+          aspectRatio: { ideal: 16/9 }
         },
-        audio: true,
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        },
       });
       
       setStream(mediaStream);
@@ -200,8 +210,12 @@ const Record = () => {
         const blob = new Blob(chunksRef.current, { type: 'video/mp4' });
         
         try {
+          // Generate thumbnail from video
+          const thumbnailBlob = await generateThumbnail(blob);
+          
           // Upload to Supabase Storage
           const fileName = `${session?.user.id}/${Date.now()}.mp4`;
+          const thumbnailFileName = `${session?.user.id}/thumbs/${Date.now()}.jpg`;
           
           toast({
             title: "Uploading video...",
@@ -217,6 +231,24 @@ const Record = () => {
 
           if (uploadError) throw uploadError;
 
+          // Upload thumbnail
+          let thumbnailUrl = null;
+          if (thumbnailBlob) {
+            const { error: thumbError } = await supabase.storage
+              .from('recordings')
+              .upload(thumbnailFileName, thumbnailBlob, {
+                contentType: 'image/jpeg',
+                upsert: false
+              });
+            
+            if (!thumbError) {
+              const { data: { publicUrl: thumbPublicUrl } } = supabase.storage
+                .from('recordings')
+                .getPublicUrl(thumbnailFileName);
+              thumbnailUrl = thumbPublicUrl;
+            }
+          }
+
           // Get public URL
           const { data: { publicUrl } } = supabase.storage
             .from('recordings')
@@ -230,7 +262,8 @@ const Record = () => {
               title: `Recording ${new Date().toLocaleDateString()}`,
               video_url: publicUrl,
               duration: recordingTime,
-              script_id: null // TODO: Link to script if generated from one
+              script_id: currentScriptId,
+              thumbnail_url: thumbnailUrl
             });
 
           if (dbError) throw dbError;
@@ -299,10 +332,49 @@ const Record = () => {
     }
   };
 
+  const generateThumbnail = (videoBlob: Blob): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      video.src = URL.createObjectURL(videoBlob);
+      video.currentTime = 1; // Capture frame at 1 second
+      
+      video.onloadeddata = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx?.drawImage(video, 0, 0);
+        
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(video.src);
+          resolve(blob);
+        }, 'image/jpeg', 0.8);
+      };
+      
+      video.onerror = () => {
+        URL.revokeObjectURL(video.src);
+        resolve(null);
+      };
+    });
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getFilterStyle = () => {
+    switch (cameraFilter) {
+      case "vivid": return "saturate(1.5) contrast(1.1)";
+      case "warm": return "sepia(0.3) saturate(1.2)";
+      case "cool": return "hue-rotate(180deg) saturate(1.1)";
+      case "bw": return "grayscale(1) contrast(1.1)";
+      case "vintage": return "sepia(0.5) contrast(1.2) brightness(0.9)";
+      case "cinematic": return "contrast(1.2) saturate(0.9) brightness(0.95)";
+      default: return "none";
+    }
   };
 
   return (
@@ -336,6 +408,7 @@ const Record = () => {
           playsInline
           muted
           className="w-full h-full object-cover"
+          style={{ filter: getFilterStyle() }}
         />
 
         {/* Left Control Panel */}
@@ -359,12 +432,28 @@ const Record = () => {
             <span className="text-sm font-medium">Snapshot</span>
           </button>
 
-          <button
-            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 backdrop-blur-md transition-all"
-          >
-            <Droplet className="w-5 h-5" />
-            <span className="text-sm font-medium">Canvas</span>
-          </button>
+          <div className="relative group">
+            <button
+              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 backdrop-blur-md transition-all"
+            >
+              <Droplet className="w-5 h-5" />
+              <span className="text-sm font-medium">Filters</span>
+              <span className="text-xs opacity-70 capitalize">{cameraFilter === "none" ? "Off" : cameraFilter}</span>
+            </button>
+            <div className="absolute left-full ml-2 top-0 hidden group-hover:block bg-black/90 backdrop-blur-md rounded-lg p-2 min-w-32">
+              {["none", "vivid", "warm", "cool", "bw", "vintage", "cinematic"].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setCameraFilter(filter)}
+                  className={`w-full text-left px-3 py-2 rounded text-sm text-white hover:bg-white/20 transition-all capitalize ${
+                    cameraFilter === filter ? 'bg-white/30' : ''
+                  }`}
+                >
+                  {filter === "none" ? "No Filter" : filter === "bw" ? "Black & White" : filter}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <button
             onClick={switchCamera}
@@ -505,15 +594,24 @@ const Record = () => {
           </div>
         )}
 
-        {/* AI Script Button */}
-        <div className="absolute top-4 right-4">
+        {/* Script Controls */}
+        <div className="absolute top-4 right-4 flex gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="gap-2"
+            onClick={() => setShowScriptEditor(true)}
+          >
+            <FileText className="w-4 h-4" />
+            {teleprompterText ? "Edit Script" : "Add Script"}
+          </Button>
           <Button
             size="sm"
             className="bg-primary hover:bg-primary/90 gap-2"
             onClick={() => setShowScriptDialog(true)}
           >
             <Sparkles className="w-4 h-4" />
-            Generate Script
+            AI Generate
           </Button>
         </div>
 
@@ -521,8 +619,22 @@ const Record = () => {
         <ScriptGeneratorDialog
           open={showScriptDialog}
           onOpenChange={setShowScriptDialog}
-          onScriptGenerated={(script) => {
+          onScriptGenerated={(script, scriptId) => {
             setTeleprompterText(script);
+            setCurrentScriptId(scriptId);
+            setShowTeleprompter(true);
+          }}
+        />
+
+        {/* Script Editor Dialog */}
+        <ScriptEditorDialog
+          open={showScriptEditor}
+          onOpenChange={setShowScriptEditor}
+          currentScript={teleprompterText}
+          scriptId={currentScriptId}
+          onScriptUpdated={(script, scriptId) => {
+            setTeleprompterText(script);
+            setCurrentScriptId(scriptId);
             setShowTeleprompter(true);
           }}
         />
