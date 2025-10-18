@@ -85,6 +85,53 @@ export type Database = {
         }
         Relationships: []
       }
+      recording_sessions: {
+        Row: {
+          connection_type: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          master_device_id: string | null
+          metadata: Json | null
+          session_code: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["session_status"]
+          user_id: string
+        }
+        Insert: {
+          connection_type?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          master_device_id?: string | null
+          metadata?: Json | null
+          session_code: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["session_status"]
+          user_id: string
+        }
+        Update: {
+          connection_type?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          master_device_id?: string | null
+          metadata?: Json | null
+          session_code?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["session_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recording_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recordings: {
         Row: {
           created_at: string
@@ -163,6 +210,118 @@ export type Database = {
         }
         Relationships: []
       }
+      session_devices: {
+        Row: {
+          angle_name: string | null
+          capabilities: Json | null
+          created_at: string
+          device_id: string
+          device_name: string
+          id: string
+          last_heartbeat: string | null
+          role: Database["public"]["Enums"]["device_role"]
+          session_id: string
+          status: Database["public"]["Enums"]["device_status"]
+          user_id: string
+        }
+        Insert: {
+          angle_name?: string | null
+          capabilities?: Json | null
+          created_at?: string
+          device_id: string
+          device_name: string
+          id?: string
+          last_heartbeat?: string | null
+          role: Database["public"]["Enums"]["device_role"]
+          session_id: string
+          status?: Database["public"]["Enums"]["device_status"]
+          user_id: string
+        }
+        Update: {
+          angle_name?: string | null
+          capabilities?: Json | null
+          created_at?: string
+          device_id?: string
+          device_name?: string
+          id?: string
+          last_heartbeat?: string | null
+          role?: Database["public"]["Enums"]["device_role"]
+          session_id?: string
+          status?: Database["public"]["Enums"]["device_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_devices_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "recording_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_devices_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_recordings: {
+        Row: {
+          angle_name: string | null
+          created_at: string
+          device_id: string
+          id: string
+          is_primary_angle: boolean | null
+          recording_id: string | null
+          session_id: string
+          sync_offset_ms: number | null
+        }
+        Insert: {
+          angle_name?: string | null
+          created_at?: string
+          device_id: string
+          id?: string
+          is_primary_angle?: boolean | null
+          recording_id?: string | null
+          session_id: string
+          sync_offset_ms?: number | null
+        }
+        Update: {
+          angle_name?: string | null
+          created_at?: string
+          device_id?: string
+          id?: string
+          is_primary_angle?: boolean | null
+          recording_id?: string | null
+          session_id?: string
+          sync_offset_ms?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_recordings_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "session_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recordings_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "recordings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "recording_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       snapshots: {
         Row: {
           created_at: string | null
@@ -209,7 +368,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      device_role: "master" | "camera"
+      device_status: "connected" | "ready" | "recording" | "disconnected"
+      session_status:
+        | "waiting"
+        | "ready"
+        | "recording"
+        | "stopped"
+        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -336,6 +502,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      device_role: ["master", "camera"],
+      device_status: ["connected", "ready", "recording", "disconnected"],
+      session_status: ["waiting", "ready", "recording", "stopped", "completed"],
+    },
   },
 } as const
