@@ -5,3 +5,9 @@ verify_jwt = true
 
 [functions.edit-script]
 verify_jwt = true
+
+[functions.ai-video-captions]
+verify_jwt = true
+
+[functions.ai-silence-removal]
+verify_jwt = true

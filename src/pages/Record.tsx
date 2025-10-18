@@ -52,6 +52,7 @@ const Record = () => {
   const [cameraFilter, setCameraFilter] = useState("none");
   const [currentScriptId, setCurrentScriptId] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -359,6 +360,71 @@ const Record = () => {
     });
   };
 
+  const takeSnapshot = async () => {
+    if (!videoRef.current || !canvasRef.current || !session) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        toast({
+          title: "Error",
+          description: "Failed to capture snapshot",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        const fileName = `${session.user.id}/${Date.now()}-snapshot.jpg`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('snapshots')
+          .upload(fileName, blob, {
+            contentType: 'image/jpeg',
+            cacheControl: '3600',
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('snapshots')
+          .getPublicUrl(fileName);
+
+        const { error: dbError } = await supabase
+          .from('snapshots')
+          .insert({
+            user_id: session.user.id,
+            image_url: publicUrl,
+            title: `Snapshot ${new Date().toLocaleString()}`,
+          });
+
+        if (dbError) throw dbError;
+
+        toast({
+          title: "Success",
+          description: "Snapshot saved successfully!",
+        });
+      } catch (error: any) {
+        console.error('Error saving snapshot:', error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to save snapshot",
+          variant: "destructive",
+        });
+      }
+    }, 'image/jpeg', 0.9);
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -426,11 +492,14 @@ const Record = () => {
           </button>
 
           <button
+            onClick={takeSnapshot}
             className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 backdrop-blur-md transition-all"
           >
             <ImageIcon className="w-5 h-5" />
             <span className="text-sm font-medium">Snapshot</span>
           </button>
+          
+          <canvas ref={canvasRef} className="hidden" />
 
           <div className="relative group">
             <button

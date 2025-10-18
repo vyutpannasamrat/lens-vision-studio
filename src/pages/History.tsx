@@ -302,14 +302,18 @@ const History = () => {
                   </CardHeader>
                   
                   <CardContent className="flex gap-2">
+                    <Link to={`/edit/${recording.id}`} className="flex-1">
+                      <Button size="sm" variant="default" className="w-full">
+                        <span className="mr-2">✂️</span>
+                        Edit
+                      </Button>
+                    </Link>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1"
                       onClick={() => handleDownload(recording.video_url, recording.title)}
                     >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
+                      <Download className="w-4 h-4" />
                     </Button>
                     <Button
                       size="sm"

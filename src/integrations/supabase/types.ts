@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      editing_projects: {
+        Row: {
+          captions: Json | null
+          created_at: string | null
+          edited_video_url: string | null
+          id: string
+          recording_id: string | null
+          status: string | null
+          timeline_data: Json | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          captions?: Json | null
+          created_at?: string | null
+          edited_video_url?: string | null
+          id?: string
+          recording_id?: string | null
+          status?: string | null
+          timeline_data?: Json | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          captions?: Json | null
+          created_at?: string | null
+          edited_video_url?: string | null
+          id?: string
+          recording_id?: string | null
+          status?: string | null
+          timeline_data?: Json | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editing_projects_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -115,6 +162,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      snapshots: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          recording_id: string | null
+          taken_at: string | null
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          recording_id?: string | null
+          taken_at?: string | null
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          recording_id?: string | null
+          taken_at?: string | null
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "snapshots_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "recordings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

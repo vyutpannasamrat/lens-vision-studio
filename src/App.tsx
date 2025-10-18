@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Record from "./pages/Record";
 import Auth from "./pages/Auth";
 import History from "./pages/History";
+import Edit from "./pages/Edit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/record" element={<Record />} />
           <Route path="/history" element={<History />} />
+          <Route path="/edit/:recordingId" element={<Edit />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
