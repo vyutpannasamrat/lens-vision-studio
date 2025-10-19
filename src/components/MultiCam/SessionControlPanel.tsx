@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Video, Users, StopCircle, Play, Loader2 } from 'lucide-react';
+import { Video, Users, StopCircle, Play } from 'lucide-react';
 import DeviceList from './DeviceList';
+import { useMediaRecorder } from '@/hooks/useMediaRecorder';
 
 interface SessionControlPanelProps {
   session: any;
@@ -17,9 +18,18 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
   const { toast } = useToast();
   const [currentSession, setCurrentSession] = useState(session);
   const [devices, setDevices] = useState<any[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isMaster = device.role === 'master';
+
+  const { isRecording, startRecording, stopRecording, stream } = useMediaRecorder({
+    sessionId: session.id,
+    deviceId: device.id,
+    onRecordingComplete: (url) => {
+      console.log('Recording uploaded:', url);
+    }
+  });
 
   // Subscribe to real-time updates
   useEffect(() => {
@@ -49,7 +59,6 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
           if (payload.new && typeof payload.new === 'object') {
             const newSession = payload.new as any;
             setCurrentSession(newSession);
-            setIsRecording(newSession.status === 'recording');
           }
         }
       )
@@ -75,6 +84,13 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
     return () => clearInterval(interval);
   }, [isRecording]);
 
+  // Display video preview
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
   const loadDevices = async () => {
     const { data, error } = await supabase
       .from('session_devices')
@@ -92,19 +108,25 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
 
   const handleStartRecording = async () => {
     try {
+      setLoading(true);
+
+      // Start media recording first
+      await startRecording();
+
+      // Update session status
       const { error } = await supabase.functions.invoke('multi-cam-session', {
         body: {
           action: 'update_status',
           session_id: session.id,
-          status: 'recording',
-        },
+          status: 'recording'
+        }
       });
 
       if (error) throw error;
 
       toast({
         title: "Recording Started",
-        description: "All cameras are now recording",
+        description: "All devices are now recording",
       });
     } catch (error: any) {
       console.error('Error starting recording:', error);
@@ -113,24 +135,32 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
         description: error.message || "Failed to start recording",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleStopRecording = async () => {
     try {
+      setLoading(true);
+
+      // Stop media recording first
+      stopRecording();
+
+      // Update session status
       const { error } = await supabase.functions.invoke('multi-cam-session', {
         body: {
           action: 'update_status',
           session_id: session.id,
-          status: 'stopped',
-        },
+          status: 'stopped'
+        }
       });
 
       if (error) throw error;
 
       toast({
         title: "Recording Stopped",
-        description: "All cameras have stopped recording",
+        description: "All recordings saved successfully",
       });
     } catch (error: any) {
       console.error('Error stopping recording:', error);
@@ -139,6 +169,8 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
         description: error.message || "Failed to stop recording",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,7 +181,29 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Video Preview */}
+      <Card className="p-6">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Camera Preview</h3>
+          <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            />
+            {isRecording && (
+              <div className="absolute top-4 right-4 flex items-center gap-2 bg-red-500 text-white px-3 py-1 rounded-full">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                <span className="text-sm font-medium">REC {formatTime(recordingTime)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+
       {/* Header */}
       <Card className="p-6">
         <div className="flex items-center justify-between">
@@ -164,12 +218,6 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
               {isMaster ? 'Master Device' : `Camera - ${device.angle_name}`}
             </p>
           </div>
-          
-          {isRecording && (
-            <div className="text-3xl font-mono font-bold text-destructive">
-              {formatTime(recordingTime)}
-            </div>
-          )}
         </div>
       </Card>
 
@@ -193,7 +241,7 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
                 size="lg" 
                 className="flex-1"
                 onClick={handleStartRecording}
-                disabled={devices.length < 1}
+                disabled={devices.length < 1 || loading}
               >
                 <Play className="mr-2 h-5 w-5" />
                 Start All Cameras
@@ -204,6 +252,7 @@ const SessionControlPanel = ({ session, device, onLeave }: SessionControlPanelPr
                 variant="destructive"
                 className="flex-1"
                 onClick={handleStopRecording}
+                disabled={loading}
               >
                 <StopCircle className="mr-2 h-5 w-5" />
                 Stop All Cameras

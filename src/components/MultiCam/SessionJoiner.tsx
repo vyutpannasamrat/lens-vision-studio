@@ -39,6 +39,17 @@ const SessionJoiner = ({ userId, onSessionJoined, onCancel }: SessionJoinerProps
     try {
       setLoading(true);
       
+      // Validate session code format
+      if (!/^[A-Z0-9]{6}$/.test(code.toUpperCase())) {
+        toast({
+          title: "Invalid Code",
+          description: "Session code must be 6 characters",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('multi-cam-session', {
         body: {
           action: 'join',
@@ -46,9 +57,16 @@ const SessionJoiner = ({ userId, onSessionJoined, onCancel }: SessionJoinerProps
           device_id: generateDeviceId(),
           device_name: deviceName,
           angle_name: angleName,
+          connection_type: 'internet',
           capabilities: {
             userAgent: navigator.userAgent,
             platform: navigator.platform,
+            mediaCapabilities: {
+              video: true,
+              audio: true,
+              maxResolution: '1920x1080',
+              maxFrameRate: 60
+            }
           }
         }
       });

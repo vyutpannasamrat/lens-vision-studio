@@ -37,6 +37,12 @@ const SessionCreator = ({ userId, onSessionCreated, onCancel }: SessionCreatorPr
           capabilities: {
             userAgent: navigator.userAgent,
             platform: navigator.platform,
+            mediaCapabilities: {
+              video: true,
+              audio: true,
+              maxResolution: '1920x1080',
+              maxFrameRate: 60
+            }
           }
         }
       });
