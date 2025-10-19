@@ -14,3 +14,9 @@ verify_jwt = true
 
 [functions.multi-cam-session]
 verify_jwt = true
+
+[functions.ai-best-angles]
+verify_jwt = true
+
+[functions.ai-smart-zoom]
+verify_jwt = true

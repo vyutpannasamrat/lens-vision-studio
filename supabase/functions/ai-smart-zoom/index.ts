@@ -11,14 +11,14 @@ serve(async (req) => {
   }
 
   try {
-    const { timelineData } = await req.json();
+    const { videoMetadata, transcript } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Analyzing timeline for silence removal...');
+    console.log('Analyzing video for smart zoom moments...');
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -31,29 +31,44 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a professional video editor. Analyze the provided timeline data and identify segments with silence, dead air, or interruptions that should be removed.
+            content: `You are a professional video editor specializing in dynamic camera movements and zooming techniques. Analyze the video content and suggest smart zoom moments.
 
-Return a JSON array of time segments to keep (removing silence and interruptions). Each segment should have:
+Smart zoom should be used to:
+1. Emphasize key points or emotional moments
+2. Add visual interest during long talking segments
+3. Highlight important reactions or expressions
+4. Create professional polish similar to TV productions
+
+Return a JSON array of zoom suggestions:
 {
-  "start": number (seconds),
-  "end": number (seconds),
-  "reason": "speech" | "important_pause" | "transition",
-  "confidence": number (0-1)
+  "zooms": [
+    {
+      "start": number (seconds),
+      "end": number (seconds),
+      "type": "zoom_in" | "zoom_out" | "zoom_hold",
+      "intensity": number (1.0 to 2.0, where 1.0 is no zoom),
+      "reason": string (why zoom here),
+      "speed": "slow" | "medium" | "fast"
+    }
+  ],
+  "summary": {
+    "total_zooms": number,
+    "avg_zoom_duration": number,
+    "recommended_style": string
+  }
 }
 
 Rules:
-1. Remove pauses longer than 1.5 seconds
-2. Remove "um", "uh", awkward silences, and false starts
-3. Remove interruptions and crosstalk (in multi-speaker scenarios)
-4. Keep natural breathing pauses (0.3-1 second)
-5. Keep intentional dramatic pauses
-6. Merge segments that are very close together (< 0.5 seconds apart)
-7. Smooth transitions between cuts
-8. Return ONLY valid JSON, no markdown or additional text`
+- Zoom in during emphasis words or emotional peaks
+- Zoom out for context or transitions
+- Keep zooms smooth (2-4 seconds duration)
+- Don't over-zoom (max 1.8x)
+- Space out zooms (minimum 10 seconds between)
+- Return ONLY valid JSON, no markdown`
           },
           {
             role: 'user',
-            content: `Analyze this timeline and suggest which segments to keep:\n\n${JSON.stringify(timelineData)}`
+            content: `Suggest smart zoom moments for this content:\n\nMetadata: ${JSON.stringify(videoMetadata)}\n\nTranscript: ${transcript || 'No transcript available'}`
           }
         ],
       }),
@@ -75,16 +90,16 @@ Rules:
       content = content.replace(/```\n?/g, '');
     }
     
-    const segments = JSON.parse(content);
+    const zoomSuggestions = JSON.parse(content);
 
-    console.log('Silence removal analysis complete:', segments.length, 'segments to keep');
+    console.log('Smart zoom analysis complete:', zoomSuggestions.summary);
 
     return new Response(
-      JSON.stringify({ segments }),
+      JSON.stringify(zoomSuggestions),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error in ai-silence-removal:', error);
+    console.error('Error in ai-smart-zoom:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
