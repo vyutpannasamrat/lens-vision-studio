@@ -14,7 +14,167 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      recording_sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+          session_code: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          session_code: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          session_code?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      scripts: {
+        Row: {
+          content: string
+          content_type: string | null
+          created_at: string | null
+          duration: number | null
+          id: string
+          title: string | null
+          tone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          content_type?: string | null
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          title?: string | null
+          tone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          content_type?: string | null
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          title?: string | null
+          tone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      session_devices: {
+        Row: {
+          angle_name: string | null
+          capabilities: Json | null
+          connection_type: string | null
+          created_at: string | null
+          device_id: string
+          device_name: string
+          id: string
+          role: string | null
+          session_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          angle_name?: string | null
+          capabilities?: Json | null
+          connection_type?: string | null
+          created_at?: string | null
+          device_id: string
+          device_name: string
+          id?: string
+          role?: string | null
+          session_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          angle_name?: string | null
+          capabilities?: Json | null
+          connection_type?: string | null
+          created_at?: string | null
+          device_id?: string
+          device_name?: string
+          id?: string
+          role?: string | null
+          session_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_devices_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "recording_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_recordings: {
+        Row: {
+          created_at: string | null
+          device_id: string
+          duration: number | null
+          file_size: number | null
+          id: string
+          metadata: Json | null
+          session_id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_id: string
+          duration?: number | null
+          file_size?: number | null
+          id?: string
+          metadata?: Json | null
+          session_id: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string | null
+          device_id?: string
+          duration?: number | null
+          file_size?: number | null
+          id?: string
+          metadata?: Json | null
+          session_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_recordings_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "session_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "recording_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
