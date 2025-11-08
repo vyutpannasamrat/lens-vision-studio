@@ -7,6 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AIFeatureCard } from "@/components/Edit/AIFeatureCard";
+import { ShareProjectDialog } from "@/components/Collaboration/ShareProjectDialog";
+import { CollaboratorList } from "@/components/Collaboration/CollaboratorList";
+import { ActivityFeed } from "@/components/Collaboration/ActivityFeed";
+import { CommentPanel } from "@/components/Collaboration/CommentPanel";
 import {
   ArrowLeft,
   Play,
@@ -19,7 +23,10 @@ import {
   Loader2,
   Wand2,
   Camera,
-  ZoomIn
+  ZoomIn,
+  Share2,
+  Users,
+  MessageSquare
 } from "lucide-react";
 
 interface TimelineSegment {
@@ -44,6 +51,9 @@ const Edit = () => {
   const [trimEnd, setTrimEnd] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string>("viewer");
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
   const [aiFeatureStatus, setAiFeatureStatus] = useState<{
     silence: "idle" | "processing" | "success" | "error";
     captions: "idle" | "processing" | "success" | "error";
@@ -75,6 +85,8 @@ const Edit = () => {
       return;
     }
 
+    setCurrentUserId(session.user.id);
+
     const { data: recordingData, error: recordingError } = await supabase
       .from("recordings")
       .select("*")
@@ -105,6 +117,13 @@ const Edit = () => {
       if (projectData.timeline_data && Array.isArray(projectData.timeline_data)) {
         setTimeline(projectData.timeline_data as unknown as TimelineSegment[]);
       }
+      
+      // Get user's role on this project
+      const { data: roleData } = await supabase.rpc('get_project_role', {
+        project_uuid: projectData.id,
+        user_uuid: session.user.id
+      });
+      setUserRole(roleData || 'viewer');
     } else {
       // Create new editing project
       const { data: newProject, error: projectError } = await supabase
@@ -148,6 +167,15 @@ const Edit = () => {
 
   const handleTrim = async () => {
     if (!editingProject) return;
+    
+    if (userRole === 'viewer') {
+      toast({
+        title: "Permission denied",
+        description: "You need editor access to make changes",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsProcessing(true);
     
@@ -166,6 +194,16 @@ const Edit = () => {
       .from("editing_projects")
       .update({ timeline_data: updatedTimeline as any })
       .eq("id", editingProject.id);
+
+    if (!error) {
+      // Log activity
+      await supabase.from("project_activity").insert({
+        project_id: editingProject.id,
+        user_id: currentUserId,
+        action: "trim_added",
+        description: "added a trim to timeline",
+      });
+    }
 
     setIsProcessing(false);
 
@@ -290,16 +328,16 @@ const Edit = () => {
       const { data: sessionData } = await supabase
         .from("session_recordings")
         .select("*, session_devices(*)")
-        .eq("recording_id", recordingId);
+        .eq("session_id", recording.session_id || "");
 
       if (!sessionData || sessionData.length === 0) {
         throw new Error("No multi-camera angles found for this recording");
       }
 
-      const angles = sessionData.map(rec => ({
-        angle: rec.angle_name,
-        device: rec.session_devices?.device_name,
-        syncOffset: rec.sync_offset_ms,
+      const angles = sessionData.map((rec: any) => ({
+        angle: rec.session_devices?.angle_name || "unknown",
+        device: rec.session_devices?.device_name || "unknown",
+        syncOffset: 0,
       }));
 
       const { data, error } = await supabase.functions.invoke('ai-best-angles', {
@@ -407,6 +445,14 @@ const Edit = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowShareDialog(true)}
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
               Export
@@ -462,7 +508,7 @@ const Edit = () => {
         {/* Editing Tools Sidebar */}
         <div className="w-full lg:w-96 bg-card border-l border-border overflow-y-auto">
           <Tabs defaultValue="ai" className="w-full">
-            <TabsList className="w-full grid grid-cols-2 sticky top-0 z-10">
+            <TabsList className="w-full grid grid-cols-4 sticky top-0 z-10">
               <TabsTrigger value="ai">
                 <Wand2 className="w-4 h-4 mr-2" />
                 AI Tools
@@ -470,6 +516,14 @@ const Edit = () => {
               <TabsTrigger value="manual">
                 <Scissors className="w-4 h-4 mr-2" />
                 Manual
+              </TabsTrigger>
+              <TabsTrigger value="collab">
+                <Users className="w-4 h-4 mr-2" />
+                Team
+              </TabsTrigger>
+              <TabsTrigger value="comments">
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Chat
               </TabsTrigger>
             </TabsList>
 
@@ -582,9 +636,45 @@ const Edit = () => {
                 </Card>
               )}
             </TabsContent>
+
+            <TabsContent value="collab" className="p-4 space-y-4">
+              <div>
+                <h2 className="text-lg font-bold text-foreground mb-1">Team Collaboration</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Manage project collaborators and track activity
+                </p>
+              </div>
+
+              <CollaboratorList
+                projectId={editingProject?.id || ""}
+                projectOwnerId={recording?.user_id || ""}
+                currentUserId={currentUserId}
+                onUpdate={loadRecording}
+              />
+
+              <div className="pt-4">
+                <ActivityFeed projectId={editingProject?.id || ""} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="comments" className="p-4 h-full">
+              <CommentPanel
+                projectId={editingProject?.id || ""}
+                currentUserId={currentUserId}
+                currentTime={currentTime}
+              />
+            </TabsContent>
           </Tabs>
         </div>
       </div>
+
+      {/* Share Project Dialog */}
+      <ShareProjectDialog
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+        projectId={editingProject?.id || ""}
+        onCollaboratorAdded={loadRecording}
+      />
     </div>
   );
 };

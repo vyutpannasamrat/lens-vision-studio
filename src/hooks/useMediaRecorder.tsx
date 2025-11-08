@@ -88,17 +88,19 @@ export const useMediaRecorder = ({ sessionId, deviceId, onRecordingComplete }: M
           .from('recordings')
           .getPublicUrl(fileName);
 
-        // Save recording metadata to database
-        const { error: dbError } = await supabase
-          .from('session_recordings')
-          .insert({
-            session_id: sessionId,
-            device_id: deviceId,
-            recording_id: null // Will be linked later
-          });
+        // Save recording metadata to database (only for multi-cam sessions)
+        if (sessionId && deviceId) {
+          const { error: dbError } = await supabase
+            .from('session_recordings')
+            .insert({
+              session_id: sessionId,
+              device_id: deviceId,
+              storage_path: fileName
+            });
 
-        if (dbError) {
-          console.error('Database error:', dbError);
+          if (dbError) {
+            console.error('Database error:', dbError);
+          }
         }
 
         if (onRecordingComplete) {
