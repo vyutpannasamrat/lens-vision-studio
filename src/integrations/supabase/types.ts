@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      editing_projects: {
+        Row: {
+          captions: string | null
+          created_at: string
+          id: string
+          recording_id: string | null
+          timeline_data: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          captions?: string | null
+          created_at?: string
+          id?: string
+          recording_id?: string | null
+          timeline_data?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          captions?: string | null
+          created_at?: string
+          id?: string
+          recording_id?: string | null
+          timeline_data?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editing_projects_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recording_sessions: {
         Row: {
           created_at: string | null
@@ -40,6 +81,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      recordings: {
+        Row: {
+          created_at: string
+          duration: number | null
+          id: string
+          script_id: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: number | null
+          id?: string
+          script_id?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number | null
+          id?: string
+          script_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recordings_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scripts: {
         Row: {
@@ -174,6 +259,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      snapshots: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
